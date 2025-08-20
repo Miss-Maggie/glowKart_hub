@@ -27,33 +27,125 @@ const Product = mongoose.model('Product', productSchema);
 
 // Sample products data
 const sampleProducts = [
+  // Food & Dining
   {
     name: "Organic Coffee Beans",
     description: "Premium organic coffee beans sourced from local farms",
     price: 12.99,
     category: "Food & Dining",
-    image: "/mock-images/food-dining.svg"
+    image: "/mock-images/food.jpg"
   },
+  {
+    name: "Gourmet Chocolate Box",
+    description: "Assorted gourmet chocolates in a gift box.",
+    price: 19.99,
+    category: "Food & Dining",
+    image: "/mock-images/food.jpg"
+  },
+  // Beauty & Personal Care
   {
     name: "Handmade Soap Set",
     description: "Artisan soap set with natural ingredients",
     price: 24.99,
     category: "Beauty & Personal Care",
-    image: "/mock-images/beauty-personal-care.svg"
+    image: "/mock-images/beauty.jpg"
   },
+  {
+    name: "Aloe Vera Face Cream",
+    description: "Hydrating face cream with aloe vera extract.",
+    price: 15.99,
+    category: "Beauty & Personal Care",
+    image: "/mock-images/beauty.jpg"
+  },
+  // Technology
   {
     name: "Smart Fitness Tracker",
     description: "Advanced fitness tracker with heart rate monitoring",
     price: 79.99,
     category: "Technology",
-    image: "/mock-images/technology.svg"
+    image: "/mock-images/technology.jpg"
   },
+  {
+    name: "Wireless Earbuds",
+    description: "Noise-cancelling wireless earbuds with charging case.",
+    price: 49.99,
+    category: "Technology",
+    image: "/mock-images/technology.jpg"
+  },
+  // Home & Garden
   {
     name: "Indoor Plant Collection",
     description: "Set of 3 indoor plants with care instructions",
     price: 34.99,
     category: "Home & Garden",
-    image: "/mock-images/home-garden.svg"
+    image: "/mock-images/homegarden.jpg"
+  },
+  {
+    name: "Ceramic Flower Pot",
+    description: "Decorative ceramic pot for indoor plants.",
+    price: 9.99,
+    category: "Home & Garden",
+    image: "/mock-images/homegarden.jpg"
+  },
+  // Automotive
+  {
+    name: "Car Air Freshener",
+    description: "Long-lasting car air freshener with natural scents.",
+    price: 4.99,
+    category: "Automotive",
+    image: "/mock-images/automotive.jpg"
+  },
+  {
+    name: "Windshield Sun Shade",
+    description: "Foldable sun shade for car windshields.",
+    price: 14.99,
+    category: "Automotive",
+    image: "/mock-images/automotive.jpg"
+  },
+  // Health & Wellness
+  {
+    name: "Yoga Mat",
+    description: "Non-slip yoga mat for all types of exercise.",
+    price: 29.99,
+    category: "Health & Wellness",
+    image: "/mock-images/health&wellness.jpg"
+  },
+  {
+    name: "Herbal Tea Sampler",
+    description: "Assorted herbal teas for relaxation and wellness.",
+    price: 11.99,
+    category: "Health & Wellness",
+    image: "/mock-images/health&wellness.jpg"
+  },
+  // Retail & Shopping
+  {
+    name: "Reusable Shopping Bag",
+    description: "Eco-friendly reusable shopping bag.",
+    price: 3.99,
+    category: "Retail & Shopping",
+    image: "/mock-images/retail.jpg"
+  },
+  {
+    name: "Gift Card",
+    description: "Gift card redeemable at any local store.",
+    price: 25.00,
+    category: "Retail & Shopping",
+    image: "/mock-images/retail.jpg"
+  },
+  // Professional Services
+  {
+    name: "Business Consultation",
+    description: "One-hour business consultation session.",
+    price: 99.99,
+    category: "Professional Services",
+    image: "/mock-images/professional.jpg"
+  },
+  {
+    name: "Resume Review",
+    description: "Professional resume review and feedback.",
+    price: 39.99,
+    category: "Professional Services",
+    image: "/mock-images/professional.jpg"
   }
 ];
 
