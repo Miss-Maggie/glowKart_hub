@@ -1,16 +1,12 @@
 import express from 'express';
 import { protect } from '../middleware/authMiddleware';
-import { User } from '../models/User';
+import { AuthRequest } from '../types/authTypes';
 
 const router = express.Router();
 
-// router.get('/protected', protect, (req, res) => {
-//   res.json({ message: `Hello ${req.user.name}, you are authenticated.` });
-// });
-
-router.get('/protected', protect, (req, res) => {
+router.get('/protected', protect, (req: AuthRequest, res) => {
+  if (!req.user) return res.status(401).json({ message: 'Unauthorized' });
   res.json({ message: `Hello ${req.user.name}, You are authenticated`, user: req.user });
 });
-
 
 export default router;
