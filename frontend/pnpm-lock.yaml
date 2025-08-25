@@ -152,6 +152,9 @@ importers:
       vaul:
         specifier: ^0.9.3
         version: 0.9.9(@types/react-dom@18.3.7(@types/react@18.3.23))(@types/react@18.3.23)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      vite:
+        specifier: ^5.4.1
+        version: 5.4.19(@types/node@22.16.3)
       zod:
         specifier: ^3.23.8
         version: 3.25.76
@@ -204,9 +207,6 @@ importers:
       typescript-eslint:
         specifier: ^8.0.1
         version: 8.36.0(eslint@9.31.0(jiti@1.21.7))(typescript@5.8.3)
-      vite:
-        specifier: ^5.4.1
-        version: 5.4.19(@types/node@22.16.3)
 
 packages:
 
