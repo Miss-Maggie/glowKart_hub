@@ -1,9 +1,11 @@
-// Simple script to add sample products to the database
+// Simple script to add sample products to the database (moved to backend/scripts)
 const mongoose = require('mongoose');
 const fs = require('fs');
+const path = require('path');
+require('dotenv').config({ path: path.join(__dirname, '..', '.env') });
 
-// MongoDB connection string (adjust if needed)
-const mongoUri = 'mongodb://localhost:27017/glowkart';
+// MongoDB connection string (use env if available)
+const mongoUri = process.env.MONGO_URI || 'mongodb://localhost:27017/glowkart';
 
 // Connect to MongoDB
 mongoose.connect(mongoUri, {
@@ -154,30 +156,31 @@ const addSampleProducts = async () => {
   try {
     // Wait for the connection to be established
     const db = mongoose.connection;
-    
+
     db.on('error', console.error.bind(console, 'connection error:'));
-    
+
     db.once('open', async () => {
       console.log('Connected to MongoDB');
-      
-      // Check if storeIds.json exists
-      if (!fs.existsSync('./scripts/storeIds.json')) {
+
+      // Check if storeIds.json exists in the same folder
+      const storeIdsPath = path.join(__dirname, 'storeIds.json');
+      if (!fs.existsSync(storeIdsPath)) {
         console.log('storeIds.json not found. Please run addSampleStores.js first.');
         mongoose.connection.close();
         return;
       }
-      
+
       // Read store IDs from file
-      const storeIds = JSON.parse(fs.readFileSync('./scripts/storeIds.json', 'utf8'));
-      
+      const storeIds = JSON.parse(fs.readFileSync(storeIdsPath, 'utf8'));
+
       if (storeIds.length === 0) {
         console.log('No store IDs found. Please run addSampleStores.js first.');
         mongoose.connection.close();
         return;
       }
-      
+
       console.log(`Found ${storeIds.length} store IDs`);
-      
+
       // Find the admin user to be the creator of products
       const User = mongoose.model('User', new mongoose.Schema({
         name: String,
@@ -185,31 +188,31 @@ const addSampleProducts = async () => {
         password: String,
         role: String,
       }));
-      
+
       const adminUser = await User.findOne({ email: 'admin@glowkart.com' });
-      
+
       if (!adminUser) {
         console.log('Admin user not found. Please run createAdminUser.js first.');
         mongoose.connection.close();
         return;
       }
-      
+
       console.log(`Found admin user: ${adminUser.name} (${adminUser.email})`);
-      
+
       // Clear existing products
       await Product.deleteMany({});
       console.log('Cleared existing products');
-      
+
       // Add store and createdBy to each product
       const productsWithRefs = sampleProducts.map((product, index) => ({
         ...product,
         store: storeIds[index % storeIds.length], // Cycle through store IDs
         createdBy: adminUser._id
       }));
-      
+
       // Add sample products
       const insertedProducts = await Product.insertMany(productsWithRefs);
-      
+
       console.log(`Sample products added successfully! Inserted ${insertedProducts.length} products.`);
       mongoose.connection.close();
     });

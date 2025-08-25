@@ -1,8 +1,10 @@
-// Simple script to add sample stores to the database
+// Simple script to add sample stores to the database (moved to backend/scripts)
 const mongoose = require('mongoose');
-require('dotenv').config({ path: './backend/.env' });
+const fs = require('fs');
+const path = require('path');
+require('dotenv').config({ path: path.join(__dirname, '..', '.env') });
 
-// MongoDB connection string (adjust if needed)
+// MongoDB connection string (use env if available)
 const mongoUri = process.env.MONGO_URI || 'mongodb://localhost:27017/glowkart';
 
 // Connect to MongoDB
@@ -66,50 +68,50 @@ const addSampleStores = async () => {
   try {
     // Wait for the connection to be established
     const db = mongoose.connection;
-    
+
     db.on('error', console.error.bind(console, 'connection error:'));
-    
+
     db.once('open', async () => {
       console.log('Connected to MongoDB');
-      
+
       // Find the admin user to be the owner of stores
       const adminUser = await User.findOne({ email: 'admin@glowkart.com' });
-      
+
       if (!adminUser) {
         console.log('Admin user not found. Please run createAdminUser.js first.');
         mongoose.connection.close();
         return;
       }
-      
+
       console.log(`Found admin user: ${adminUser.name} (${adminUser.email})`);
-      
+
       // Clear existing stores
       await Store.deleteMany({});
       console.log('Cleared existing stores');
-      
+
       // Add owner to each store
       const storesWithOwner = sampleStores.map(store => ({
         ...store,
         owner: adminUser._id
       }));
-      
+
       // Add sample stores
       const insertedStores = await Store.insertMany(storesWithOwner);
-      
+
       console.log(`Sample stores added successfully! Inserted ${insertedStores.length} stores.`);
-      
+
       // Display the created stores with their IDs
       console.log('\nCreated stores with IDs:');
       insertedStores.forEach(store => {
         console.log(`- ${store.name} (ID: ${store._id})`);
       });
-      
+
       // Save store IDs to a file for use in addSampleProducts.js
-      const fs = require('fs');
       const storeIds = insertedStores.map(store => store._id.toString());
-      fs.writeFileSync('./scripts/storeIds.json', JSON.stringify(storeIds, null, 2));
-      console.log('\nStore IDs saved to ./scripts/storeIds.json');
-      
+      const outPath = path.join(__dirname, 'storeIds.json');
+      fs.writeFileSync(outPath, JSON.stringify(storeIds, null, 2));
+      console.log(`\nStore IDs saved to ${outPath}`);
+
       mongoose.connection.close();
     });
   } catch (error) {
