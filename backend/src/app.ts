@@ -13,8 +13,14 @@ import uploadRoute from './routes/uploadRoute';
 
 const app = express();
 
+// Allow configuring allowed CORS origins via env: set CORS_ORIGINS="https://your-frontend.com,https://other.com"
+const defaultOrigins = ['http://localhost:8080', 'http://localhost:8081', 'http://localhost:8082'];
+const corsOrigins = process.env.CORS_ORIGINS && process.env.CORS_ORIGINS.length > 0
+  ? process.env.CORS_ORIGINS.split(',').map(s => s.trim())
+  : defaultOrigins;
+
 const corsOptions = {
-  origin: ['http://localhost:8080', 'http://localhost:8081', 'http://localhost:8082'],
+  origin: corsOrigins,
   credentials: true,
   optionsSuccessStatus: 200
 };
