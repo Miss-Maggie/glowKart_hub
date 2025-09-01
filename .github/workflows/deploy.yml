@@ -26,22 +26,34 @@ jobs:
         working-directory: frontend
         run: pnpm install
 
+      - name: Debug: which secrets are available
+        run: |
+          echo "VERCEL_TOKEN present: ${VERCEL_TOKEN:+yes}"
+          echo "RENDER_API_KEY present: ${RENDER_API_KEY:+yes}"
+          echo "RENDER_SERVICE_ID_FRONTEND present: ${RENDER_SERVICE_ID_FRONTEND:+yes}"
+          echo "RENDER_SERVICE_ID_BACKEND present: ${RENDER_SERVICE_ID_BACKEND:+yes}"
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          RENDER_API_KEY: ${{ secrets.RENDER_API_KEY }}
+          RENDER_SERVICE_ID_FRONTEND: ${{ secrets.RENDER_SERVICE_ID_FRONTEND }}
+          RENDER_SERVICE_ID_BACKEND: ${{ secrets.RENDER_SERVICE_ID_BACKEND }}
+
       - name: Build frontend
         working-directory: frontend
         run: pnpm build
 
       - name: Deploy to Vercel (optional)
-        if: secrets.VERCEL_TOKEN != ''
+        if: ${{ secrets.VERCEL_TOKEN }}
         env:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
           VERCEL_PROJECT: ${{ secrets.VERCEL_FRONTEND_PROJECT_NAME }}
         run: |
           # Use the Vercel CLI to deploy the built frontend. Provide
           # VERCEL_FRONTEND_PROJECT_NAME as the project argument (optional).
-          npx vercel --cwd frontend --prod --confirm --token $VERCEL_TOKEN ${VERCEL_PROJECT:+--project $VERCEL_PROJECT}
+          npx vercel --cwd frontend --prod --confirm --token "$VERCEL_TOKEN" $(if [ -n "$VERCEL_PROJECT" ]; then echo "--project $VERCEL_PROJECT"; fi)
 
       - name: Trigger Render frontend deploy (if configured)
-        if: secrets.RENDER_API_KEY != '' && secrets.RENDER_SERVICE_ID_FRONTEND != ''
+        if: ${{ secrets.RENDER_API_KEY && secrets.RENDER_SERVICE_ID_FRONTEND }}
         env:
           RENDER_API_KEY: ${{ secrets.RENDER_API_KEY }}
           RENDER_SERVICE_ID: ${{ secrets.RENDER_SERVICE_ID_FRONTEND }}
@@ -77,7 +89,7 @@ jobs:
         run: pnpm build
 
       - name: Trigger Render backend deploy
-        if: secrets.RENDER_API_KEY != '' && secrets.RENDER_SERVICE_ID_BACKEND != ''
+        if: ${{ secrets.RENDER_API_KEY && secrets.RENDER_SERVICE_ID_BACKEND }}
         env:
           RENDER_API_KEY: ${{ secrets.RENDER_API_KEY }}
           RENDER_SERVICE_ID: ${{ secrets.RENDER_SERVICE_ID_BACKEND }}
