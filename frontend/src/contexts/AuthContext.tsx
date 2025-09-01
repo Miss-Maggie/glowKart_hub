@@ -36,12 +36,21 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   // Check if user is logged in on initial load
   useEffect(() => {
     const initializeAuth = async () => {
-      // Always start with a clean state - require login every time
-      localStorage.removeItem('token');
-      localStorage.removeItem('currentUser');
-      setToken(null);
-      setUser(null);
-      setLoading(false);
+      // Rehydrate auth state from localStorage (allow persisted login)
+      try {
+        const storedToken = localStorage.getItem('token');
+        const storedUser = localStorage.getItem('currentUser');
+        if (storedToken) setToken(storedToken);
+        if (storedUser) setUser(JSON.parse(storedUser));
+      } catch (e) {
+        // If parsing fails, clear stored values to avoid repeated errors
+        localStorage.removeItem('token');
+        localStorage.removeItem('currentUser');
+        setToken(null);
+        setUser(null);
+      } finally {
+        setLoading(false);
+      }
     };
 
     initializeAuth();

@@ -1,0 +1,95 @@
+name: CI - Deploy on Push
+
+# Triggers on every push (adjust branches if you only want main)
+on:
+  push: {}
+
+jobs:
+  frontend-deploy:
+    name: Build & Deploy Frontend (Vercel + Render)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+
+      - name: Enable pnpm
+        run: |
+          corepack enable
+          corepack prepare pnpm@latest --activate
+
+      - name: Install frontend dependencies
+        working-directory: frontend
+        run: pnpm install
+
+      - name: Build frontend
+        working-directory: frontend
+        run: pnpm build
+
+      - name: Deploy to Vercel (optional)
+        if: secrets.VERCEL_TOKEN != ''
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          VERCEL_PROJECT: ${{ secrets.VERCEL_FRONTEND_PROJECT_NAME }}
+        run: |
+          # Use the Vercel CLI to deploy the built frontend. Provide
+          # VERCEL_FRONTEND_PROJECT_NAME as the project argument (optional).
+          npx vercel --cwd frontend --prod --confirm --token $VERCEL_TOKEN ${VERCEL_PROJECT:+--project $VERCEL_PROJECT}
+
+      - name: Trigger Render frontend deploy (if configured)
+        if: secrets.RENDER_API_KEY != '' && secrets.RENDER_SERVICE_ID_FRONTEND != ''
+        env:
+          RENDER_API_KEY: ${{ secrets.RENDER_API_KEY }}
+          RENDER_SERVICE_ID: ${{ secrets.RENDER_SERVICE_ID_FRONTEND }}
+        run: |
+          curl -X POST "https://api.render.com/v1/services/$RENDER_SERVICE_ID/deploys" \
+            -H "Authorization: Bearer $RENDER_API_KEY" \
+            -H "Content-Type: application/json" \
+            -d '{}'
+
+  backend-deploy:
+    name: Build & Deploy Backend (Render)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+
+      - name: Enable pnpm
+        run: |
+          corepack enable
+          corepack prepare pnpm@latest --activate
+
+      - name: Install backend dependencies
+        working-directory: backend
+        run: pnpm install
+
+      - name: Build backend
+        working-directory: backend
+        run: pnpm build
+
+      - name: Trigger Render backend deploy
+        if: secrets.RENDER_API_KEY != '' && secrets.RENDER_SERVICE_ID_BACKEND != ''
+        env:
+          RENDER_API_KEY: ${{ secrets.RENDER_API_KEY }}
+          RENDER_SERVICE_ID: ${{ secrets.RENDER_SERVICE_ID_BACKEND }}
+        run: |
+          curl -X POST "https://api.render.com/v1/services/$RENDER_SERVICE_ID/deploys" \
+            -H "Authorization: Bearer $RENDER_API_KEY" \
+            -H "Content-Type: application/json" \
+            -d '{}'
+
+# Secrets required (configure in GitHub repository settings):
+# - VERCEL_TOKEN: Personal token for Vercel (optional)
+# - VERCEL_FRONTEND_PROJECT_NAME: Project name in Vercel (optional)
+# - RENDER_API_KEY: Render API key
+# - RENDER_SERVICE_ID_FRONTEND: Render service id for frontend (optional)
+# - RENDER_SERVICE_ID_BACKEND: Render service id for backend

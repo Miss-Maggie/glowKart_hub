@@ -20,12 +20,41 @@ const corsOrigins = process.env.CORS_ORIGINS && process.env.CORS_ORIGINS.length 
   : defaultOrigins;
 
 const corsOptions = {
-  origin: corsOrigins,
+  origin: (origin: any, cb: any) => {
+    // origin may be undefined for same-origin or tools like curl/postman
+    const requested = origin || 'no-origin';
+    const allowed = corsOrigins.includes(requested) || corsOrigins.includes('*');
+    console.log(`[CORS] incoming origin=${requested} allowed=${allowed}`);
+    if (allowed) cb(null, true);
+    else cb(new Error('Not allowed by CORS'));
+  },
   credentials: true,
-  optionsSuccessStatus: 200
+  optionsSuccessStatus: 200,
 };
 
-app.use(cors(corsOptions));
+// Apply CORS with our dynamic origin checker
+app.use((req, res, next) => {
+  console.log('[CORS-MW] Request origin header:', req.headers.origin);
+  return cors(corsOptions)(req, res, next);
+});
+
+// Diagnostics endpoint for live deployments. Use this to inspect request
+// origin, headers, and see if CORS would allow the request. Do NOT expose
+// sensitive environment variables here in production.
+app.get('/api/diag', (req, res) => {
+  const origin = req.headers.origin || 'none';
+  const allowed = corsOrigins.includes(origin) || corsOrigins.includes('*');
+  res.json({
+    ok: true,
+    origin,
+    allowed,
+    corsOrigins,
+    headers: req.headers,
+    url: req.originalUrl,
+    method: req.method,
+    uptime: process.uptime(),
+  });
+});
 app.use(morgan('dev'));
 app.use(express.json());
 

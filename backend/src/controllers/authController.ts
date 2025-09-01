@@ -3,7 +3,17 @@ import jwt from 'jsonwebtoken';
 import { User } from '../models/User';
 
 const generateToken = (userId: string) => {
-  return jwt.sign({ id: userId }, process.env.JWT_SECRET!, {
+  const secret = process.env.JWT_SECRET;
+  if (!secret) {
+    // Throw a clear, actionable error instead of allowing jsonwebtoken to
+    // throw a less friendly message later.
+    throw new Error('JWT_SECRET is not set. Please set process.env.JWT_SECRET');
+  }
+  if (!userId) {
+    throw new Error('generateToken called without userId');
+  }
+
+  return jwt.sign({ id: userId }, secret, {
     expiresIn: '7d',
   });
 };

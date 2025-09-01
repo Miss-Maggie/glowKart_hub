@@ -8,23 +8,33 @@ const apiRequest = async (endpoint: string, options: RequestInit = {}) => {
   // Don't set Content-Type for FormData, let browser set it with boundary
   const isFormData = options.body instanceof FormData;
   
+  // Auto-attach Authorization header from localStorage token when present
+  const storedToken = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+
   const config: RequestInit = {
     headers: {
       ...(!isFormData && { 'Content-Type': 'application/json' }),
+      ...(storedToken ? { Authorization: `Bearer ${storedToken}` } : {}),
       ...options.headers,
     },
     ...options,
   };
 
   try {
-    const response = await fetch(url, config);
+  const response = await fetch(url, config);
     
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
       throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
     }
     
-    return await response.json();
+    // Some endpoints (like file upload) may not return JSON
+    const text = await response.text();
+    try {
+      return JSON.parse(text);
+    } catch {
+      return text;
+    }
   } catch (error) {
     console.error(`API request failed: ${error}`);
     throw error;
